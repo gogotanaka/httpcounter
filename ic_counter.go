@@ -7,15 +7,15 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"log"
 	"net/http"
+	"time"
 )
 
 var (
 	redisHost      = flag.String("rh", "127.0.0.1", "Redis Hostname")
 	redisPort      = flag.String("rp", "6379", "Redis Port")
 	maxConnections = flag.Int("max-connections", 10, "Max connections to Redis")
-
-	listeningHost = flag.String("lh", "127.0.0.1", "Set Hostname")
-	listeningPort = flag.String("lp", "8080", "Set Hostname")
+	listeningHost  = flag.String("lh", "127.0.0.1", "Set Hostname")
+	listeningPort  = flag.String("lp", "8080", "Set Hostname")
 )
 
 var redisPool = redis.NewPool(func() (redis.Conn, error) {
@@ -32,7 +32,7 @@ func incr(seg string, id string) (value string) {
 	c := redisPool.Get()
 	defer c.Close()
 
-	key := fmt.Sprintf("%s/%s", seg, id)
+	key := fmt.Sprintf("%s/%s/%s", seg, time.Now().Format("2006-01-02"), id)
 
 	c.Do("INCR", key)
 	value, err := redis.String(c.Do("GET", key))
