@@ -1,63 +1,65 @@
 package main
 
 import (
-    "fmt"
-    "flag"
-    "net/http"
-    "log"
-    "github.com/julienschmidt/httprouter"
-    "github.com/garyburd/redigo/redis"
+	"flag"
+	"fmt"
+	"github.com/garyburd/redigo/redis"
+	"github.com/julienschmidt/httprouter"
+	"log"
+	"net/http"
 )
 
 var (
-    redisHost = flag.String("hostname", "127.0.0.1", "Set Hostname")
-    redisPort = flag.String("port", "6379", "Set Port")
-    maxConnections = flag.Int("max-connections", 10, "Max connections to Redis")
+	redisHost      = flag.String("hostname", "127.0.0.1", "Set Hostname")
+	redisPort      = flag.String("port", "6379", "Set Port")
+	maxConnections = flag.Int("max-connections", 10, "Max connections to Redis")
 )
 
 var redisPool = redis.NewPool(func() (redis.Conn, error) {
-    c, err := redis.Dial("tcp", *redisHost + ":" + *redisPort)
+	c, err := redis.Dial("tcp", *redisHost + ":" + *redisPort)
 
-    if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 
-    return c, err
+	return c, err
 }, *maxConnections)
 
 func incr(seg string, id string) (value string) {
-    c := redisPool.Get()
-    defer c.Close()
+	c := redisPool.Get()
+	defer c.Close()
 
-    key := fmt.Sprintf("%s/%s", seg, id)
+	key := fmt.Sprintf("%s/%s", seg, id)
 
-    c.Do("INCR", key)
-    value, err := redis.String(c.Do("GET", key))
-    if err != nil {
-        return "err"
-    } else {
-        return
-    }
+	c.Do("INCR", key)
+	value, err := redis.String(c.Do("GET", key))
+	if err != nil {
+		return "err"
+	} else {
+		return
+	}
 }
 
 func Imp(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    id :=  ps.ByName("id")
+	id := ps.ByName("id")
 
-    fmt.Fprint(w, incr("imp", id))
+	fmt.Fprint(w, incr("imp", id))
 }
 
 func Click(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-    id :=  ps.ByName("id")
+	id := ps.ByName("id")
 
-    fmt.Fprint(w, incr("click", id))
+	fmt.Fprint(w, incr("click", id))
 }
 
 func main() {
-    router := httprouter.New()
-    router.GET("/imp/:id", Imp)
-    router.GET("/click/:id", Click)
+	router := httprouter.New()
+	router.GET("/imp/:id", Imp)
+	router.GET("/click/:id", Click)
 
-    flag.Parse()
+	flag.Parse()
 
-    defer redisPool.Close()
+	defer redisPool.Close()
 
-    log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
