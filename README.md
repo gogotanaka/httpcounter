@@ -20,6 +20,6 @@
 
 
 # Tap
-    http://localhost:8080/imp/4232
+    curl -X POST http://localhost:8080/imp/4232
 
-    http://localhost:8080/click/324
+    curl -X POST http://localhost:8080/click/234

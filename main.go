@@ -10,13 +10,16 @@ import (
 )
 
 var (
-	redisHost      = flag.String("hostname", "127.0.0.1", "Set Hostname")
-	redisPort      = flag.String("port", "6379", "Set Port")
+	redisHost      = flag.String("rh", "127.0.0.1", "Redis Hostname")
+	redisPort      = flag.String("rp", "6379", "Redis Port")
 	maxConnections = flag.Int("max-connections", 10, "Max connections to Redis")
+
+	listeningHost = flag.String("lh", "127.0.0.1", "Set Hostname")
+	listeningPort = flag.String("lp", "8080", "Set Hostname")
 )
 
 var redisPool = redis.NewPool(func() (redis.Conn, error) {
-	c, err := redis.Dial("tcp", *redisHost + ":" + *redisPort)
+	c, err := redis.Dial("tcp", *redisHost+":"+*redisPort)
 
 	if err != nil {
 		return nil, err
@@ -54,12 +57,12 @@ func Click(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 func main() {
 	router := httprouter.New()
-	router.GET("/imp/:id", Imp)
-	router.GET("/click/:id", Click)
+	router.POST("/imp/:id", Imp)
+	router.POST("/click/:id", Click)
 
 	flag.Parse()
 
 	defer redisPool.Close()
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(*listeningHost+":"+*listeningPort, router))
 }
