@@ -1,4 +1,7 @@
 # goAdServer
+
+# Run
+
     wget -N https://storage.googleapis.com/golang/go1.4.2.darwin-amd64-osx10.8.tar.gz -P /tmp/
 
     tar -C /usr/local -xzf /tmp/go1.4.2.darwin-amd64-osx10.8.tar.gz
@@ -15,4 +18,8 @@
 
     go run main.go
 
-    [open http://localhost:8080/]
+
+# Tap
+    http://localhost:8080/imp/4232
+
+    http://localhost:8080/click/324

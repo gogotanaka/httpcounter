@@ -10,16 +10,15 @@ import (
 )
 
 var (
-    redisAddress   = flag.String("redis-address", ":6379", "Address to the Redis server")
+    redisHost = flag.String("hostname", "127.0.0.1", "Set Hostname")
+    redisPort = flag.String("port", "6379", "Set Port")
     maxConnections = flag.Int("max-connections", 10, "Max connections to Redis")
 )
 
 var redisPool = redis.NewPool(func() (redis.Conn, error) {
-    c, err := redis.Dial("tcp", *redisAddress)
+    c, err := redis.Dial("tcp", *redisHost + ":" + *redisPort)
 
-    if err != nil {
-        return nil, err
-    }
+    if err != nil { return nil, err }
 
     return c, err
 }, *maxConnections)
